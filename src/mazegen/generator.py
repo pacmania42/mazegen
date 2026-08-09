@@ -29,7 +29,7 @@ class MazeGenerator:
             self.grid.append(row)
 
         self._set_up_cells()
-        self._hammer()
+        self._iterative_backtracking()
 
     def _set_up_cells(self) -> None:
         for row in range(self.height):
@@ -43,17 +43,35 @@ class MazeGenerator:
                 if col > 0:
                     self.grid[row][col].w = self.grid[row][col - 1]
 
-    def _backtracker(self) -> None:
-        curren = self.grid[0][0]
+    def _iterative_backtracking(self) -> None:
+        current = self.grid[0][0]
         stack: list[Cell] = []
         neighbors: list[Cell] = []
 
         current.visited = True
         stack.append(current)
+        while (stack):
 
-        while(stack)
             neighbors = self._get_valid_neighbors(stack[-1])
-            next_cell = random.choice(neighbors)
+
+            if neighbors:
+                next_cell = random.choice(neighbors)
+                self._remove_wall(stack[-1], next_cell)
+                next_cell.visited = True
+                stack.append(next_cell)
+            else:
+                stack.pop()
+
+    def _remove_wall(self, current_cell: Cell, next_cell: Cell) -> None:
+
+        if current_cell.n == next_cell:
+            current_cell.walls &= 0b1110
+        if current_cell.e == next_cell:
+            current_cell.walls &= 0b1101
+        if current_cell.s == next_cell:
+            current_cell.walls &= 0b1011
+        if current_cell.w == next_cell:
+            current_cell.walls &= 0b0111
 
     def _get_valid_neighbors(self, cell: Cell) -> list[Cell]:
 
