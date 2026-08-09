@@ -1,6 +1,7 @@
 from typing import Optional
 import random
 
+
 class Cell:
     def __init__(self) -> None:
         self.n: Optional[Cell] = None
@@ -66,12 +67,16 @@ class MazeGenerator:
 
         if current_cell.n == next_cell:
             current_cell.walls &= 0b1110
+            next_cell.walls &= 0b1011
         if current_cell.e == next_cell:
             current_cell.walls &= 0b1101
+            next_cell.walls &= 0b0111
         if current_cell.s == next_cell:
             current_cell.walls &= 0b1011
+            next_cell.walls &= 0b1110
         if current_cell.w == next_cell:
             current_cell.walls &= 0b0111
+            next_cell.walls &= 0b1101
 
     def _get_valid_neighbors(self, cell: Cell) -> list[Cell]:
 
