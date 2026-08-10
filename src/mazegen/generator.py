@@ -6,16 +6,16 @@ Define the Cell and MAzegenerator classes to create maze.
 The algorithm implemented is iterative backtracking.
 """
 
+
 class Cell:
     """Cell class
     It represent a single cell which compose the maze.
 
     Parameters:
     ----------
-    Stores references to its neighbors cells, represented by
-    cardinals points, its wall state by binary representation
-    and boolean state to indicates if it was visited during maze
-    generation.
+    It stores references to its neighbors cells, represented by
+    cardinals points. Walls are stored as four bits. It also indicate
+    if it has been visited during maze generator.
     """
     def __init__(self) -> None:
         self.n: Optional[Cell] = None
@@ -31,9 +31,8 @@ class MazeGenerator:
     It generates the maze using iterative backtracking.
 
     The generator create a rectangular grid of cells and ramdomly
-    select a neighbor cell to connect breaking down the 
-    wall in between. When a seed is provided it make the maze
-    reproducible.
+    select a neighbor cell to connect breaking down the wall in between.
+    When a seed is provided it make the maze reproducible.
     """
     def __init__(self, width: int, height: int, entry: tuple[int, int],
                  exit: tuple[int, int], output_file: str, perfect: bool,
