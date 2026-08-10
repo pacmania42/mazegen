@@ -13,11 +13,17 @@ class Cell:
 
 
 class MazeGenerator:
-    def __init__(self, width: int, height: int,
+    def __init__(self, width: int, height: int, entry: tuple[int, int],
+                 exit: tuple[int, int], output_file: str, perfect: bool,
                  seed: Optional[int] = None) -> None:
         self.width = width
         self.height = height
+        self.entry = entry
+        self.exit = exit
+        self.output_file = output_file
+        self.perfect = perfect
         self.seed = seed
+        self._random_generator = random.Random(seed)
         self.grid: list[list[Cell]] = []
 
     def grid_init(self) -> None:
@@ -56,7 +62,7 @@ class MazeGenerator:
             neighbors = self._get_valid_neighbors(stack[-1])
 
             if neighbors:
-                next_cell = random.choice(neighbors)
+                next_cell = self._random_generator.choice(neighbors)
                 self._remove_wall(stack[-1], next_cell)
                 next_cell.visited = True
                 stack.append(next_cell)
@@ -93,8 +99,8 @@ class MazeGenerator:
 
         return neighbors
 
-    def export(self, filename: str) -> None:
-        with open(filename, "w") as file:
+    def export(self) -> None:
+        with open(self.output_file, "w") as file:
             for row in self.grid:
                 for cell in row:
                     file.write(f"{cell.walls:X}")
