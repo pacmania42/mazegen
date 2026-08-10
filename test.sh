@@ -1,4 +1,18 @@
 #!/bin/bash
+# test.sh
+# Is a test script which build the mazegen package, copy the .whl file to
+# the wheel folder in a-maze-ing project, refresh depencies and
+# resynchronize the virtual enviroment.
+
+# Execution:
+# The script should run in the root of mazegen.
+# Both projects must be in the same lavel of folders to match the routes 
+
+
+# This version is testing the seed input and pretent to find three
+# exportations files .txt from a-maze-ing:
+# maze.txt, maze42_I.txt maze42_II.txt
+# seed = None, seed = 42 and seed = 42.
 
 set -e
 
