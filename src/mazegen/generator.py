@@ -1,8 +1,8 @@
-from typing import Optional
 import random
+
 """Maze generation module
 
-Define the Cell and MAzegenerator classes to create maze.
+Define the Cell and Mazegenerator classes to create maze.
 The algorithm implemented is iterative backtracking.
 """
 
@@ -17,26 +17,31 @@ class Cell:
     cardinals points. Walls are stored as four bits. It also indicate
     if it has been visited during maze generator.
     """
+
     def __init__(self) -> None:
-        self.n: Optional[Cell] = None
-        self.e: Optional[Cell] = None
-        self.s: Optional[Cell] = None
-        self.w: Optional[Cell] = None
+        self.n: Cell | None = None
+        self.e: Cell | None = None
+        self.s: Cell | None = None
+        self.w: Cell | None = None
         self.walls = 0b1111
         self.visited = False
 
 
 class MazeGenerator:
-    """Mazegenerator class
-    It generates the maze using iterative backtracking.
-
-    The generator create a rectangular grid of cells and ramdomly
-    select a neighbor cell to connect breaking down the wall in between.
-    When a seed is provided it make the maze reproducible.
     """
-    def __init__(self, width: int, height: int, entry: tuple[int, int],
-                 exit: tuple[int, int], output_file: str, perfect: bool,
-                 seed: Optional[int] = None) -> None:
+    Generates the maze using iterative backtracking.
+    """
+
+    def __init__(
+        self,
+        width: int = 15,
+        height: int = 15,
+        entry: tuple[int, int] = (0, 0),
+        exit: tuple[int, int] = (14, 14),
+        output_file: str = "output_maze.txt",
+        perfect: bool = False,
+        seed: int | None = None,
+    ) -> None:
         self.width = width
         self.height = height
         self.entry = entry
@@ -48,7 +53,7 @@ class MazeGenerator:
         self.grid: list[list[Cell]] = []
 
     def grid_init(self) -> None:
-        """Create and initialize the maze grid."""
+        """Creates and initialize the maze grid."""
         for _ in range(self.height):
             row: list[Cell] = []
 
@@ -61,7 +66,7 @@ class MazeGenerator:
         self._iterative_backtracking()
 
     def _set_up_cells(self) -> None:
-        """Link each cell to its existing neighboring cells."""
+        """Links each cell to its existing neighboring cells."""
         for row in range(self.height):
             for col in range(self.width):
                 if row > 0:
@@ -74,15 +79,19 @@ class MazeGenerator:
                     self.grid[row][col].w = self.grid[row][col - 1]
 
     def _iterative_backtracking(self) -> None:
-        """Generate maze paths using iterative backtracking."""
+        """Generates maze paths using iterative backtracking.
+
+        The generator create a rectangular grid of cells and ramdomly
+        select a neighbor cell to connect breaking down the wall in between.
+        When a seed is provided it make the maze reproducible.
+
+        """
         current = self.grid[0][0]
         stack: list[Cell] = []
-        neighbors: list[Cell] = []
 
         current.visited = True
         stack.append(current)
-        while (stack):
-
+        while stack:
             neighbors = self._get_valid_neighbors(stack[-1])
 
             if neighbors:
@@ -94,7 +103,7 @@ class MazeGenerator:
                 stack.pop()
 
     def _remove_wall(self, current_cell: Cell, next_cell: Cell) -> None:
-        """It remove the shared wall between two cells"""
+        """Removes the shared wall between two cells"""
         if current_cell.n == next_cell:
             current_cell.walls &= 0b1110
             next_cell.walls &= 0b1011
@@ -112,14 +121,9 @@ class MazeGenerator:
         """Return the unvisited neighbors of a cell"""
         neighbors: list[Cell] = []
 
-        if cell.n is not None and not cell.n.visited:
-            neighbors.append(cell.n)
-        if cell.e is not None and not cell.e.visited:
-            neighbors.append(cell.e)
-        if cell.s is not None and not cell.s.visited:
-            neighbors.append(cell.s)
-        if cell.w is not None and not cell.w.visited:
-            neighbors.append(cell.w)
+        for wall in [cell.n, cell.e, cell.s, cell.w]:
+            if wall and not wall.visited:
+                neighbors.append(wall)
 
         return neighbors
 
@@ -127,7 +131,6 @@ class MazeGenerator:
         """Write the generated maze to the output file"""
         with open(self.output_file, "w") as file:
             for row in self.grid:
-                for cell in row:
-                    file.write(f"{cell.walls:X}")
+                file.writelines(f"{cell.walls:X}" for cell in row)
 
                 file.write("\n")

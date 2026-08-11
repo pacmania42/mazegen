@@ -1,7 +1,6 @@
-#!/usr/bin/env python3
+#! /usr/bin/env python3
 
 import sys
-
 
 NORTH = 0b0001
 EAST = 0b0010

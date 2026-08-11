@@ -1,4 +1,4 @@
-#!/bin/bash
+#! /usr/bin/env python3
 # test.sh
 # Is a test script which build the mazegen package, copy the .whl file to
 # the wheel folder in a-maze-ing project, refresh depencies and
