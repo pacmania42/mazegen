@@ -1,3 +1,4 @@
 dist
-.synced
 __pycache__
+.DS_Store
+.synced

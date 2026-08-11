@@ -1,5 +1,6 @@
-# SRC = ./src/mazegen/generator.py
-SRC := ./src/mazegen/__init__.py ./tests/test_basics.py
+SRC = ./src/mazegen/generator.py \
+	./src/mazegen/__init__.py \
+	./tests/test_basics.py
 
 MYPY_OPTIONS := --warn-return-any \
 	--warn-unused-ignores \
