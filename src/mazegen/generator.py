@@ -40,7 +40,7 @@ class MazeGenerator:
         exit: tuple[int, int] = (14, 14),
         output_file: str = "output_maze.txt",
         perfect: bool = False,
-        seed: int | None = None,
+        seed: int = 0,
     ) -> None:
         self.width = width
         self.height = height
@@ -52,7 +52,15 @@ class MazeGenerator:
         self._random_generator = random.Random(seed)
         self.grid: list[list[Cell]] = []
 
-    def grid_init(self) -> None:
+    def generate(self, seed=0) -> None:
+
+        self.seed = seed
+
+        self._grid_init()
+        self._set_up_cells()
+        self._iterative_backtracking()
+
+    def _grid_init(self) -> None:
         """Creates and initialize the maze grid."""
         for _ in range(self.height):
             row: list[Cell] = []
@@ -61,9 +69,6 @@ class MazeGenerator:
                 row.append(Cell())
 
             self.grid.append(row)
-
-        self._set_up_cells()
-        self._iterative_backtracking()
 
     def _set_up_cells(self) -> None:
         """Links each cell to its existing neighboring cells."""
