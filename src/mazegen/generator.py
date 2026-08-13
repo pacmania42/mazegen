@@ -6,6 +6,9 @@ Define the Cell and Mazegenerator classes to create maze.
 The algorithm implemented is iterative backtracking.
 """
 
+INVALID_SIZE = "Sizes values must be integers and positives"
+INVALID_ENTRY_EXIT = "ENTRY and EXIT values must be integers and positives"
+INVALID_SEED = "SEED must be an integer"
 
 class Cell:
     """Cell class
@@ -46,7 +49,6 @@ class MazeGenerator:
         self.exit = exit
         self.output_file = output_file
         self.perfect = perfect
-        self.seed = seed
 
         self._grid: list[list[Cell]] = []
         self._maze: list[list[int]] = []
@@ -57,10 +59,30 @@ class MazeGenerator:
 
         self.seed = seed
 
+        self._validate_parameters()
+
         self._grid_init()
         self._set_up_cells()
         self._iterative_backtracking()
         self._set_maze_values()
+
+    @property
+    def maze(self) -> list[list[int]]:
+        return self._maze
+
+    def export(self) -> None:
+
+        """Write the generated maze to the output file"""
+
+        with open(self.output_file, "w") as file:
+            for row in self._grid:
+                file.writelines(f"{cell.walls:X}" for cell in row)
+
+                file.write("\n")
+
+    def _validate_parameters(self) -> None:
+        self._validate_types()
+        self._validate_values()
 
     def _grid_init(self) -> None:
 
@@ -92,6 +114,7 @@ class MazeGenerator:
                     self._grid[row][col].w = self._grid[row][col - 1]
 
     def _iterative_backtracking(self) -> None:
+
         """Generates maze paths using iterative backtracking.
 
         The generator create a rectangular grid of cells and ramdomly
@@ -99,17 +122,18 @@ class MazeGenerator:
         When a seed is provided it make the maze reproducible.
 
         """
+
         current = self._grid[0][0]
         stack: list[Cell] = []
 
         current.visited = True
         stack.append(current)
-        self._random_generator = random.Random(self.seed)
+        random_generator = random.Random(self.seed)
         while stack:
             neighbors = self._get_valid_neighbors(stack[-1])
 
             if neighbors:
-                next_cell = self._random_generator.choice(neighbors)
+                next_cell = random_generator.choice(neighbors)
                 self._remove_wall(stack[-1], next_cell)
                 next_cell.visited = True
                 stack.append(next_cell)
@@ -117,7 +141,9 @@ class MazeGenerator:
                 stack.pop()
 
     def _remove_wall(self, current_cell: Cell, next_cell: Cell) -> None:
+
         """Removes the shared wall between two cells"""
+
         if current_cell.n == next_cell:
             current_cell.walls &= 0b1110
             next_cell.walls &= 0b1011
@@ -132,7 +158,9 @@ class MazeGenerator:
             next_cell.walls &= 0b1101
 
     def _get_valid_neighbors(self, cell: Cell) -> list[Cell]:
+
         """Return the unvisited neighbors of a cell"""
+
         neighbors: list[Cell] = []
 
         for wall in [cell.n, cell.e, cell.s, cell.w]:
@@ -142,6 +170,7 @@ class MazeGenerator:
         return neighbors
 
     def _set_maze_values(self) -> None:
+
         self._maze.clear()
 
         for row in self._grid:
@@ -150,14 +179,26 @@ class MazeGenerator:
                 new_row.append(cell.walls)
             self._maze.append(new_row)
 
-    @property
-    def maze(self) -> list[list[int]]:
-        return self._maze
+    def _validate_types(self) -> None:
 
-    def export(self) -> None:
-        """Write the generated maze to the output file"""
-        with open(self.output_file, "w") as file:
-            for row in self._grid:
-                file.writelines(f"{cell.walls:X}" for cell in row)
+        if ( not isinstance(self.width, int) or
+                not isinstance(self.height, int)):
+            raise TypeError(INVALID_SIZE)
+        if ( not isinstance(self.exit[0], int) or
+                not isinstance(self.exit[1], int)):
+            raise TypeError(INVALID_ENTRY_EXIT)
+        if ( not isinstance(self.entry[0], int) or
+                not isinstance(self.entry[1], int)):
+            raise TypeError(INVALID_ENTRY_EXIT)
+        if self.seed is not None:
+            if not isinstance(self.seed, int):
+                raise TypeError(INVALID_SEED)
 
-                file.write("\n")
+    def _validate_values(self) -> None:
+
+        if self.width < 0 or self.height < 0:
+            raise ValueError(INVALID_SIZE)
+        if self.entry[0] < 0 or self.entry[1] < 0:
+            raise ValueError(INVALID_ENTRY_EXIT)
+        if self.exit[0] < 0 or self.exit[1] < 0:
+            raise ValueError(INVALID_ENTRY_EXIT)
