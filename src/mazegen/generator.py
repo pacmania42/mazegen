@@ -10,6 +10,7 @@ INVALID_SIZE = "Sizes values must be integers and positives"
 INVALID_ENTRY_EXIT = "ENTRY and EXIT values must be integers and positives"
 INVALID_SEED = "SEED must be an integer"
 
+
 class Cell:
     """Cell class
     It represent a single cell which compose the maze.
@@ -181,13 +182,13 @@ class MazeGenerator:
 
     def _validate_types(self) -> None:
 
-        if ( not isinstance(self.width, int) or
+        if (not isinstance(self.width, int) or
                 not isinstance(self.height, int)):
             raise TypeError(INVALID_SIZE)
-        if ( not isinstance(self.exit[0], int) or
+        if (not isinstance(self.exit[0], int) or
                 not isinstance(self.exit[1], int)):
             raise TypeError(INVALID_ENTRY_EXIT)
-        if ( not isinstance(self.entry[0], int) or
+        if (not isinstance(self.entry[0], int) or
                 not isinstance(self.entry[1], int)):
             raise TypeError(INVALID_ENTRY_EXIT)
         if self.seed is not None:
