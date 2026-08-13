@@ -28,60 +28,68 @@ class Cell:
 
 
 class MazeGenerator:
-    """
-    Generates the maze using iterative backtracking.
+    """Generates the maze using iterative backtracking.
     """
 
     def __init__(
         self,
-        width: int = 15,
-        height: int = 15,
+        size: tuple[int, int] = (15, 15),
         entry: tuple[int, int] = (0, 0),
         exit: tuple[int, int] = (14, 14),
         output_file: str = "output_maze.txt",
         perfect: bool = False,
-        seed: int = 0,
+        seed: int = None,
     ) -> None:
-        self.width = width
-        self.height = height
+        self.width = size[0]
+        self.height = size[1]
         self.entry = entry
         self.exit = exit
         self.output_file = output_file
         self.perfect = perfect
         self.seed = seed
-        self._random_generator = random.Random(seed)
-        self.grid: list[list[Cell]] = []
 
-    def generate(self, seed=0) -> None:
+        self._grid: list[list[Cell]] = []
+        self._maze: list[list[int]] = []
+
+        self.generate(seed)
+
+    def generate(self, seed: int = None) -> None:
 
         self.seed = seed
 
         self._grid_init()
         self._set_up_cells()
         self._iterative_backtracking()
+        self._set_maze_values()
 
     def _grid_init(self) -> None:
+
         """Creates and initialize the maze grid."""
+
+        self._grid.clear()
+
         for _ in range(self.height):
             row: list[Cell] = []
 
             for _ in range(self.width):
                 row.append(Cell())
 
-            self.grid.append(row)
+            self._grid.append(row)
 
     def _set_up_cells(self) -> None:
+
         """Links each cell to its existing neighboring cells."""
+
         for row in range(self.height):
             for col in range(self.width):
                 if row > 0:
-                    self.grid[row][col].n = self.grid[row - 1][col]
+                    self._grid[row][col].n = self._grid[row - 1][col]
                 if col < self.width - 1:
-                    self.grid[row][col].e = self.grid[row][col + 1]
+                    self._grid[row][col].e = self._grid[row][col + 1]
                 if row < self.height - 1:
-                    self.grid[row][col].s = self.grid[row + 1][col]
+                    self._grid[row][col].s = self._grid[row + 1][col]
                 if col > 0:
-                    self.grid[row][col].w = self.grid[row][col - 1]
+                    self._grid[row][col].w = self._grid[row][col - 1]
 
     def _iterative_backtracking(self) -> None:
         """Generates maze paths using iterative backtracking.
@@ -91,11 +99,12 @@ class MazeGenerator:
         When a seed is provided it make the maze reproducible.
 
         """
-        current = self.grid[0][0]
+        current = self._grid[0][0]
         stack: list[Cell] = []
 
         current.visited = True
         stack.append(current)
+        self._random_generator = random.Random(self.seed)
         while stack:
             neighbors = self._get_valid_neighbors(stack[-1])
 
@@ -132,10 +141,23 @@ class MazeGenerator:
 
         return neighbors
 
+    def _set_maze_values(self) -> None:
+        self._maze.clear()
+
+        for row in self._grid:
+            new_row = []
+            for cell in row:
+                new_row.append(cell.walls)
+            self._maze.append(new_row)
+
+    @property
+    def maze(self) -> list[list[int]]:
+        return self._maze
+
     def export(self) -> None:
         """Write the generated maze to the output file"""
         with open(self.output_file, "w") as file:
-            for row in self.grid:
+            for row in self._grid:
                 file.writelines(f"{cell.walls:X}" for cell in row)
 
                 file.write("\n")
