@@ -6,8 +6,9 @@ Define the Cell and Mazegenerator classes to create maze.
 The algorithm implemented is iterative backtracking.
 """
 
-INVALID_SIZE = "Sizes values must be integers and positives"
-INVALID_ENTRY_EXIT = "ENTRY and EXIT values must be integers and positives"
+INVALID_SIZE = "Size values must be integers and at least 2"
+INVALID_ENTRY_EXIT = ("ENTRY and EXIT values must be integers, positives and "
+                      "positioned inside the maze boundaries")
 INVALID_SEED = "SEED must be an integer"
 
 
@@ -42,7 +43,7 @@ class MazeGenerator:
         exit: tuple[int, int] = (14, 14),
         output_file: str = "maze.txt",
         perfect: bool = False,
-        seed: int = None,
+        seed: int | None = None,
     ) -> None:
         self._width = size[0]
         self._height = size[1]
@@ -56,7 +57,7 @@ class MazeGenerator:
 
         self.generate(seed)
 
-    def generate(self, seed: int = None) -> None:
+    def generate(self, seed: int | None = None) -> None:
 
         self.seed = seed
 
@@ -232,9 +233,23 @@ class MazeGenerator:
 
     def _validate_values(self) -> None:
 
-        if self._width < 0 or self._height < 0:
+        # Validating size maze
+
+        if self._width < 2 or self._height < 2:
             raise ValueError(INVALID_SIZE)
+
+        # Validating negative values for entry and exit
+
         if self._entry[0] < 0 or self._entry[1] < 0:
             raise ValueError(INVALID_ENTRY_EXIT)
         if self._exit[0] < 0 or self._exit[1] < 0:
+            raise ValueError(INVALID_ENTRY_EXIT)
+
+        # Validating entry and exit are inside the maze boundaries"
+
+        if self._entry[0] >= self._width or self._entry[1] >= self._height:
+            raise ValueError(INVALID_ENTRY_EXIT)
+        if self._exit[0] >= self._width or self._exit[1] >= self._height:
+            raise ValueError(INVALID_ENTRY_EXIT)
+        if self._entry == self._exit:
             raise ValueError(INVALID_ENTRY_EXIT)
