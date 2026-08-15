@@ -40,16 +40,16 @@ class MazeGenerator:
         size: tuple[int, int] = (15, 15),
         entry: tuple[int, int] = (0, 0),
         exit: tuple[int, int] = (14, 14),
-        output_file: str = "output_maze.txt",
+        output_file: str = "maze.txt",
         perfect: bool = False,
         seed: int = None,
     ) -> None:
-        self.width = size[0]
-        self.height = size[1]
-        self.entry = entry
-        self.exit = exit
-        self.output_file = output_file
-        self.perfect = perfect
+        self._width = size[0]
+        self._height = size[1]
+        self._entry = entry
+        self._exit = exit
+        self._output_file = output_file
+        self._perfect = perfect
 
         self._grid: list[list[Cell]] = []
         self._maze: list[list[int]] = []
@@ -64,6 +64,7 @@ class MazeGenerator:
 
         self._grid_init()
         self._set_up_cells()
+        self._42_print()
         self._iterative_backtracking()
         self._set_maze_values()
 
@@ -71,15 +72,25 @@ class MazeGenerator:
     def maze(self) -> list[list[int]]:
         return self._maze
 
+    @property
+    def maze_entry(self) -> tuple[int, int]:
+        return self._entry[0], self._entry[1]
+
+    @property
+    def maze_exit(self) -> tuple[int, int]:
+        return self._exit[0], self._exit[1]
+
     def export(self) -> None:
 
         """Write the generated maze to the output file"""
 
-        with open(self.output_file, "w") as file:
+        with open(self._output_file, "w") as file:
             for row in self._grid:
                 file.writelines(f"{cell.walls:X}" for cell in row)
 
                 file.write("\n")
+
+#   Private functions
 
     def _validate_parameters(self) -> None:
         self._validate_types()
@@ -91,10 +102,10 @@ class MazeGenerator:
 
         self._grid.clear()
 
-        for _ in range(self.height):
+        for _ in range(self._height):
             row: list[Cell] = []
 
-            for _ in range(self.width):
+            for _ in range(self._width):
                 row.append(Cell())
 
             self._grid.append(row)
@@ -103,16 +114,40 @@ class MazeGenerator:
 
         """Links each cell to its existing neighboring cells."""
 
-        for row in range(self.height):
-            for col in range(self.width):
+        for row in range(self._height):
+            for col in range(self._width):
                 if row > 0:
                     self._grid[row][col].n = self._grid[row - 1][col]
-                if col < self.width - 1:
+                if col < self._width - 1:
                     self._grid[row][col].e = self._grid[row][col + 1]
-                if row < self.height - 1:
+                if row < self._height - 1:
                     self._grid[row][col].s = self._grid[row + 1][col]
                 if col > 0:
                     self._grid[row][col].w = self._grid[row][col - 1]
+
+    def _42_print(self) -> None:
+
+        ft = [[15, 0, 15, 0, 15, 15],
+              [15, 0, 15, 0, 0, 15],
+              [15, 15, 15, 0, 15, 15],
+              [0, 0, 15, 0, 15, 0],
+              [0, 0, 15, 0, 15, 15]]
+
+        ft_len_x = len(ft[0])
+        ft_len_y = len(ft)
+        m_len_x = len(self._grid[0])
+        m_len_y = len(self._grid)
+        start = ((m_len_x // 2) - (ft_len_x // 2),
+                 (m_len_y // 2) - (ft_len_y // 2))
+
+        if self._width < ft_len_x * 2 or self._height < ft_len_y * 2:
+            print("Warning! Maze is too small to add '42' in it")
+            return
+
+        for y, row in enumerate(ft):
+            for x, val in enumerate(row):
+                if val == 15:
+                    self._grid[start[1] + y][start[0] + x].visited = True
 
     def _iterative_backtracking(self) -> None:
 
@@ -182,14 +217,14 @@ class MazeGenerator:
 
     def _validate_types(self) -> None:
 
-        if (not isinstance(self.width, int) or
-                not isinstance(self.height, int)):
+        if (not isinstance(self._width, int) or
+                not isinstance(self._height, int)):
             raise TypeError(INVALID_SIZE)
-        if (not isinstance(self.exit[0], int) or
-                not isinstance(self.exit[1], int)):
+        if (not isinstance(self._exit[0], int) or
+                not isinstance(self._exit[1], int)):
             raise TypeError(INVALID_ENTRY_EXIT)
-        if (not isinstance(self.entry[0], int) or
-                not isinstance(self.entry[1], int)):
+        if (not isinstance(self._entry[0], int) or
+                not isinstance(self._entry[1], int)):
             raise TypeError(INVALID_ENTRY_EXIT)
         if self.seed is not None:
             if not isinstance(self.seed, int):
@@ -197,9 +232,9 @@ class MazeGenerator:
 
     def _validate_values(self) -> None:
 
-        if self.width < 0 or self.height < 0:
+        if self._width < 0 or self._height < 0:
             raise ValueError(INVALID_SIZE)
-        if self.entry[0] < 0 or self.entry[1] < 0:
+        if self._entry[0] < 0 or self._entry[1] < 0:
             raise ValueError(INVALID_ENTRY_EXIT)
-        if self.exit[0] < 0 or self.exit[1] < 0:
+        if self._exit[0] < 0 or self._exit[1] < 0:
             raise ValueError(INVALID_ENTRY_EXIT)
