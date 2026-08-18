@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [master]
+    branches: [main, 18-setup-02-setup-cd]
   pull_request:
-    branches: [master]
+    branches: [main]
   workflow_call:
 
 # Cancel superseded runs on the same PR/branch so pushes don't queue up stale checks
