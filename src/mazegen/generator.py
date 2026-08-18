@@ -7,10 +7,10 @@ The algorithm implemented is iterative backtracking.
 """
 
 INVALID_SIZE = "Size values must be integers and at least 2"
-INVALID_ENTRY_EXIT = ("ENTRY and EXIT values must be positives and "
-                      "positioned inside the maze boundaries")
-INVALID_ENTRY_EXIT_P = ("ENTRY and EXIT values cannot be setted "
-                        "over the 42 pattern")
+INVALID_ENTRY_EXIT = "ENTRY and EXIT values must be positives and positioned \
+inside the maze boundaries"
+INVALID_ENTRY_EXIT_P = "ENTRY and EXIT values cannot be setted over the 42\
+pattern"
 INVALID_SEED = "SEED must be an integer"
 
 
@@ -35,8 +35,7 @@ class Cell:
 
 
 class MazeGenerator:
-    """Generates the maze using iterative backtracking.
-    """
+    """Generates the maze using iterative backtracking."""
 
     def __init__(
         self,
@@ -90,7 +89,6 @@ class MazeGenerator:
         return self._shortest_path
 
     def export(self) -> None:
-
         """Write the generated maze to the output file"""
 
         with open(self._output_file, "w") as file:
@@ -103,10 +101,9 @@ class MazeGenerator:
             file.write(f"{self._exit}\n")
             file.write(f"{self._shortest_path}\n")
 
-#   Private functions
+    #   Private functions
 
     def _grid_init(self) -> None:
-
         """Creates and initialize the maze grid."""
 
         self._grid.clear()
@@ -120,7 +117,6 @@ class MazeGenerator:
             self._grid.append(row)
 
     def _set_up_cells(self) -> None:
-
         """Links each cell to its existing neighboring cells."""
 
         for row in range(self._height):
@@ -136,18 +132,22 @@ class MazeGenerator:
 
     def _42_print(self) -> None:
 
-        ft = [[15, 0, 0, 0, 15, 15, 15],
-              [15, 0, 0, 0, 0, 0, 15],
-              [15, 15, 15, 0, 15, 15, 15],
-              [0, 0, 15, 0, 15, 0, 0],
-              [0, 0, 15, 0, 15, 15, 15]]
+        ft = [
+            [15, 0, 0, 0, 15, 15, 15],
+            [15, 0, 0, 0, 0, 0, 15],
+            [15, 15, 15, 0, 15, 15, 15],
+            [0, 0, 15, 0, 15, 0, 0],
+            [0, 0, 15, 0, 15, 15, 15],
+        ]
 
         ft_len_x = len(ft[0])
         ft_len_y = len(ft)
         m_len_x = len(self._grid[0])
         m_len_y = len(self._grid)
-        start = ((m_len_x // 2) - (ft_len_x // 2),
-                 (m_len_y // 2) - (ft_len_y // 2))
+        start = (
+            (m_len_x // 2) - (ft_len_x // 2),
+            (m_len_y // 2) - (ft_len_y // 2),
+        )
 
         if self._width < ft_len_x + 2 or self._height < ft_len_y + 2:
             print("Warning! Maze is too small to add '42' in it")
@@ -158,14 +158,12 @@ class MazeGenerator:
                 if val == 15:
                     x = start[0] + j
                     y = start[1] + i
-                    if (self._entry == (x, y) or
-                            self._exit == (x, y)):
+                    if self._entry == (x, y) or self._exit == (x, y):
                         raise ValueError(INVALID_ENTRY_EXIT_P)
                     print(f"({x}, {y})")
                     self._grid[y][x].visited = True
 
     def _iterative_backtracking(self) -> None:
-
         """Generates maze paths using iterative backtracking.
 
         The generator create a rectangular grid of cells and ramdomly
@@ -192,7 +190,6 @@ class MazeGenerator:
                 stack.pop()
 
     def _remove_wall(self, current_cell: Cell, next_cell: Cell) -> None:
-
         """Removes the shared wall between two cells"""
 
         if current_cell.n == next_cell:
@@ -209,7 +206,6 @@ class MazeGenerator:
             next_cell.walls &= 0b1101
 
     def _get_valid_neighbors(self, cell: Cell) -> list[Cell]:
-
         """Return the unvisited neighbors of a cell"""
 
         neighbors: list[Cell] = []
