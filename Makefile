@@ -9,11 +9,8 @@ MYPY_OPTIONS := --warn-return-any \
 	--check-untyped-defs
 
 SYNC := .synced
-BUILD := dist/*.whl
 
-build: $(BUILD)
-
-$(BUILD): $(SYNC)
+build:
 	uv build
 
 install: $(SYNC)
