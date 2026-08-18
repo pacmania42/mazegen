@@ -33,6 +33,7 @@ jobs:
         with:
           name: dist
           path: dist/
+      - uses: astral-sh/setup-uv@v3
       - uses: softprops/action-gh-release@v2
         with:
           files: dist/*
