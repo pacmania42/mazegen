@@ -2,9 +2,10 @@ name: CI
 
 on:
   push:
-    branches: [master]
+    branches: [main]
   pull_request:
-    branches: [master]
+    branches: [main]
+  workflow_call:
 
 # Cancel superseded runs on the same PR/branch so pushes don't queue up stale checks
 concurrency:

@@ -1,3 +1,7 @@
+#! /usr/bin/env sh
+set -e
+
 make format
 make lint-strict
 make test
+make build
