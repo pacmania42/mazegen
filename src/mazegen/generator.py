@@ -131,6 +131,7 @@ class MazeGenerator:
                     self._grid[row][col].w = self._grid[row][col - 1]
 
     def _42_print(self) -> None:
+        """Create the 42 pattern in the center of the maze"""
 
         ft = [
             [15, 0, 0, 0, 15, 15, 15],
