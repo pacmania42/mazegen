@@ -96,9 +96,10 @@ class MazeGenerator:
                 file.writelines(f"{cell.walls:X}" for cell in row)
 
                 file.write("\n")
+
             file.write("\n")
-            file.write(f"{self._entry}\n")
-            file.write(f"{self._exit}\n")
+            file.write(f"{self._entry[0]},{self._entry[1]}\n")
+            file.write(f"{self._exit[0]},{self._exit[1]}\n")
             file.write(f"{self._shortest_path}\n")
 
     #   Private functions
