@@ -152,7 +152,6 @@ class MazeGenerator:
         )
 
         if self._width < ft_len_x + 2 or self._height < ft_len_y + 2:
-            print("Warning! Maze is too small to add '42' in it")
             return
 
         for i, row in enumerate(ft):
@@ -162,7 +161,6 @@ class MazeGenerator:
                     y = start[1] + i
                     if self._entry == (x, y) or self._exit == (x, y):
                         raise ValueError(INVALID_ENTRY_EXIT_P)
-                    print(f"({x}, {y})")
                     self._grid[y][x].visited = True
 
     def _iterative_backtracking(self) -> None:
