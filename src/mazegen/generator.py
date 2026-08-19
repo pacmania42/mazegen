@@ -131,6 +131,7 @@ class MazeGenerator:
                     self._grid[row][col].w = self._grid[row][col - 1]
 
     def _42_print(self) -> None:
+        """Create the 42 pattern in the center of the maze"""
 
         ft = [
             [15, 0, 0, 0, 15, 15, 15],
@@ -150,7 +151,6 @@ class MazeGenerator:
         )
 
         if self._width < ft_len_x + 2 or self._height < ft_len_y + 2:
-            print("Warning! Maze is too small to add '42' in it")
             return
 
         for i, row in enumerate(ft):
@@ -160,7 +160,6 @@ class MazeGenerator:
                     y = start[1] + i
                     if self._entry == (x, y) or self._exit == (x, y):
                         raise ValueError(INVALID_ENTRY_EXIT_P)
-                    print(f"({x}, {y})")
                     self._grid[y][x].visited = True
 
     def _iterative_backtracking(self) -> None:
@@ -218,13 +217,15 @@ class MazeGenerator:
 
     def _set_maze_values(self) -> None:
 
-        self._maze.clear()
+        maze: list[list[int]] = []
 
         for row in self._grid:
             new_row = []
             for cell in row:
                 new_row.append(cell.walls)
-            self._maze.append(new_row)
+            maze.append(new_row)
+
+        self._maze = maze
 
     def _validate_values(self) -> None:
 
