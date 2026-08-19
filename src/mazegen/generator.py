@@ -218,13 +218,15 @@ class MazeGenerator:
 
     def _set_maze_values(self) -> None:
 
-        self._maze.clear()
+        maze: list[list[int]] = []
 
         for row in self._grid:
             new_row = []
             for cell in row:
                 new_row.append(cell.walls)
-            self._maze.append(new_row)
+            maze.append(new_row)
+
+        self._maze = maze
 
     def _validate_values(self) -> None:
 
