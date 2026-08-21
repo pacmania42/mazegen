@@ -1,4 +1,5 @@
 import random
+from pathlib import Path
 
 """Maze generation module
 
@@ -40,18 +41,17 @@ class MazeGenerator:
     def __init__(
         self,
         size: tuple[int, int] = (15, 15),
-        entry: tuple[int, int] = (0, 0),
-        exit: tuple[int, int] = (14, 14),
-        output_file: str = "maze.txt",
+        entry_cell: tuple[int, int] = (0, 0),
+        exit_cell: tuple[int, int] = (14, 14),
         perfect: bool = False,
-        seed: int | None = None,
+        seed: int = 42,
     ) -> None:
-        self._width = size[0]
-        self._height = size[1]
-        self._entry = entry
-        self._exit = exit
-        self._output_file = output_file
-        self._perfect = perfect
+        self._width: int = size[0]
+        self._height: int = size[1]
+        self._entry_cell: tuple[int, int] = entry_cell
+        self._exit_cell: tuple[int, int] = exit_cell
+        self._perfect: bool = perfect
+        self._seed: int | None = seed
 
         self._grid: list[list[Cell]] = []
         self._maze: list[list[int]] = []
@@ -61,7 +61,7 @@ class MazeGenerator:
 
     def generate(self, seed: int | None = None) -> None:
 
-        self.seed = seed
+        self._seed = seed
 
         self._validate_values()
 
@@ -78,28 +78,28 @@ class MazeGenerator:
 
     @property
     def maze_entry(self) -> tuple[int, int]:
-        return self._entry[0], self._entry[1]
+        return self._entry_cell[0], self._entry_cell[1]
 
     @property
     def maze_exit(self) -> tuple[int, int]:
-        return self._exit[0], self._exit[1]
+        return self._exit_cell[0], self._exit_cell[1]
 
     @property
     def shortest_path(self) -> str:
         return self._shortest_path
 
-    def export(self) -> None:
+    def export(self, output_file: Path) -> None:
         """Write the generated maze to the output file"""
 
-        with open(self._output_file, "w") as file:
+        with open(output_file, "w") as file:
             for row in self._grid:
                 file.writelines(f"{cell.walls:X}" for cell in row)
 
                 file.write("\n")
 
             file.write("\n")
-            file.write(f"{self._entry[0]},{self._entry[1]}\n")
-            file.write(f"{self._exit[0]},{self._exit[1]}\n")
+            file.write(f"{self._entry_cell[0]},{self._entry_cell[1]}\n")
+            file.write(f"{self._exit_cell[0]},{self._exit_cell[1]}\n")
             file.write(f"{self._shortest_path}\n")
 
     #   Private functions
@@ -159,7 +159,7 @@ class MazeGenerator:
                 if val == 15:
                     x = start[0] + j
                     y = start[1] + i
-                    if self._entry == (x, y) or self._exit == (x, y):
+                    if self._entry_cell == (x, y) or self._exit_cell == (x, y):
                         raise ValueError(INVALID_ENTRY_EXIT_P)
                     self._grid[y][x].visited = True
 
@@ -177,7 +177,7 @@ class MazeGenerator:
 
         current.visited = True
         stack.append(current)
-        random_generator = random.Random(self.seed)
+        random_generator = random.Random(self._seed)
         while stack:
             neighbors = self._get_valid_neighbors(stack[-1])
 
@@ -237,18 +237,24 @@ class MazeGenerator:
 
         # Validating negative values for entry and exit
 
-        if self._entry[0] < 0 or self._entry[1] < 0:
+        if self._entry_cell[0] < 0 or self._entry_cell[1] < 0:
             raise ValueError(INVALID_ENTRY_EXIT)
-        if self._exit[0] < 0 or self._exit[1] < 0:
+        if self._exit_cell[0] < 0 or self._exit_cell[1] < 0:
             raise ValueError(INVALID_ENTRY_EXIT)
 
         # Validating entry and exit must be inside the maze boundaries
 
-        if self._entry[0] >= self._width or self._entry[1] >= self._height:
+        if (
+            self._entry_cell[0] >= self._width
+            or self._entry_cell[1] >= self._height
+        ):
             raise ValueError(INVALID_ENTRY_EXIT)
-        if self._exit[0] >= self._width or self._exit[1] >= self._height:
+        if (
+            self._exit_cell[0] >= self._width
+            or self._exit_cell[1] >= self._height
+        ):
             raise ValueError(INVALID_ENTRY_EXIT)
-        if self._entry == self._exit:
+        if self._entry_cell == self._exit_cell:
             raise ValueError(INVALID_ENTRY_EXIT)
 
     def _BFS_path(self) -> None:

@@ -8,9 +8,8 @@ def test_constructor_signature() -> None:
     assert list(sig.parameters) == [
         "self",
         "size",
-        "entry",
-        "exit",
-        "output_file",
+        "entry_cell",
+        "exit_cell",
         "perfect",
         "seed",
     ]
