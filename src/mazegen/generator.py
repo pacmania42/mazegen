@@ -44,13 +44,14 @@ class MazeGenerator:
         entry_cell: tuple[int, int] = (0, 0),
         exit_cell: tuple[int, int] = (14, 14),
         perfect: bool = False,
-        seed: int | None = None,
+        seed: int = 42,
     ) -> None:
-        self._width = size[0]
-        self._height = size[1]
-        self._entry_cell = entry_cell
-        self._exit_cell = exit_cell
-        self._perfect = perfect
+        self._width: int = size[0]
+        self._height: int = size[1]
+        self._entry_cell: tuple[int, int] = entry_cell
+        self._exit_cell: tuple[int, int] = exit_cell
+        self._perfect: bool = perfect
+        self._seed: int | None = seed
 
         self._grid: list[list[Cell]] = []
         self._maze: list[list[int]] = []
@@ -60,7 +61,7 @@ class MazeGenerator:
 
     def generate(self, seed: int | None = None) -> None:
 
-        self.seed = seed
+        self._seed = seed
 
         self._validate_values()
 
@@ -176,7 +177,7 @@ class MazeGenerator:
 
         current.visited = True
         stack.append(current)
-        random_generator = random.Random(self.seed)
+        random_generator = random.Random(self._seed)
         while stack:
             neighbors = self._get_valid_neighbors(stack[-1])
 
