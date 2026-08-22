@@ -15,6 +15,10 @@ pattern"
 INVALID_SEED = "SEED must be an integer"
 
 
+class MazeGeneratorError(Exception):
+    pass
+
+
 class Cell:
     """Cell class
     It represent a single cell which compose the maze.
@@ -45,6 +49,7 @@ class MazeGenerator:
         exit_cell: tuple[int, int] = (14, 14),
         perfect: bool = False,
         seed: int = 42,
+        pattern: list[tuple[int, int]] | None = None,
     ) -> None:
         self._width: int = size[0]
         self._height: int = size[1]
@@ -52,6 +57,7 @@ class MazeGenerator:
         self._exit_cell: tuple[int, int] = exit_cell
         self._perfect: bool = perfect
         self._seed: int | None = seed
+        self._pattern = pattern
 
         self._grid: list[list[Cell]] = []
         self._maze: list[list[int]] = []
@@ -67,7 +73,7 @@ class MazeGenerator:
 
         self._grid_init()
         self._set_up_cells()
-        self._42_print()
+        self._put_pattern()
         self._iterative_backtracking()
         self._set_maze_values()
         self._BFS_path()
@@ -131,37 +137,31 @@ class MazeGenerator:
                 if col > 0:
                     self._grid[row][col].w = self._grid[row][col - 1]
 
-    def _42_print(self) -> None:
-        """Create the 42 pattern in the center of the maze"""
+    def _put_pattern(self) -> None:
+        """Create the pattern in the center of the maze"""
 
-        ft = [
-            [15, 0, 0, 0, 15, 15, 15],
-            [15, 0, 0, 0, 0, 0, 15],
-            [15, 15, 15, 0, 15, 15, 15],
-            [0, 0, 15, 0, 15, 0, 0],
-            [0, 0, 15, 0, 15, 15, 15],
-        ]
-
-        ft_len_x = len(ft[0])
-        ft_len_y = len(ft)
-        m_len_x = len(self._grid[0])
-        m_len_y = len(self._grid)
-        start = (
-            (m_len_x // 2) - (ft_len_x // 2),
-            (m_len_y // 2) - (ft_len_y // 2),
-        )
-
-        if self._width < ft_len_x + 2 or self._height < ft_len_y + 2:
+        if not self._pattern:
             return
 
-        for i, row in enumerate(ft):
-            for j, val in enumerate(row):
-                if val == 15:
-                    x = start[0] + j
-                    y = start[1] + i
-                    if self._entry_cell == (x, y) or self._exit_cell == (x, y):
-                        raise ValueError(INVALID_ENTRY_EXIT_P)
-                    self._grid[y][x].visited = True
+        try:
+            pattern_width = max([x for (_, x) in self._pattern]) + 1
+            pattern_height = max([y for (y, _) in self._pattern]) + 1
+        except TypeError as e:
+            raise MazeGeneratorError(f"Issue putting the pattern: {e}") from e
+
+        if (
+            pattern_width < 2
+            or self._width < pattern_width + 2
+            or pattern_height < 2
+            or self._height < pattern_height + 2
+        ):
+            return
+
+        offset_x = (self._width - pattern_width) // 2
+        offset_y = (self._height - pattern_height) // 2
+
+        for x, y in self._pattern:
+            self._grid[offset_y + y][offset_x + x].visited = True
 
     def _iterative_backtracking(self) -> None:
         """Generates maze paths using iterative backtracking.
