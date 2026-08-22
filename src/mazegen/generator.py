@@ -108,7 +108,6 @@ class MazeGenerator:
             file.write(f"{self._entry_cell[0]},{self._entry_cell[1]}\n")
             file.write(f"{self._exit_cell[0]},{self._exit_cell[1]}\n")
             file.write(f"{self._shortest_path}\n")
-            print(self._shortest_path)
 
     #   Private functions
 
