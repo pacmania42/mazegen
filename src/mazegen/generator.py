@@ -265,8 +265,9 @@ class MazeGenerator:
 
         queue = deque([start])
 
-        before: dict[tuple[int, int], tuple[tuple[int, int], str]
-                     | None] = {start: None}
+        before: dict[tuple[int, int], tuple[tuple[int, int], str] | None] = {
+            start: None
+        }
 
         movements = [
             (0, -1, 0b0001, "N"),
@@ -275,7 +276,7 @@ class MazeGenerator:
             (-1, 0, 0b1000, "W"),
         ]
 
-        while (queue):
+        while queue:
             explore = queue.popleft()
 
             if explore == end:
@@ -303,8 +304,13 @@ class MazeGenerator:
 
         current = end
 
-        while before[current] is not None:
-            parent, move = before[current]
+        while True:
+            previous = before[current]
+
+            if previous is None:
+                break
+
+            parent, move = previous
             path.append(move)
             current = parent
 
