@@ -12,4 +12,5 @@ def test_constructor_signature() -> None:
         "exit_cell",
         "perfect",
         "seed",
+        "pattern",
     ]
