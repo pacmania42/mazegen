@@ -1,5 +1,6 @@
 import random
 from collections import deque
+from pathlib import Path
 
 """Maze generation module
 
@@ -13,6 +14,10 @@ inside the maze boundaries"
 INVALID_ENTRY_EXIT_P = "ENTRY and EXIT values cannot be setted over the 42\
 pattern"
 INVALID_SEED = "SEED must be an integer"
+
+
+class MazeGeneratorError(Exception):
+    pass
 
 
 class Cell:
@@ -41,18 +46,19 @@ class MazeGenerator:
     def __init__(
         self,
         size: tuple[int, int] = (15, 15),
-        entry: tuple[int, int] = (0, 0),
-        exit: tuple[int, int] = (14, 14),
-        output_file: str = "maze.txt",
+        entry_cell: tuple[int, int] = (0, 0),
+        exit_cell: tuple[int, int] = (14, 14),
         perfect: bool = False,
-        seed: int | None = None,
+        seed: int = 42,
+        pattern: list[tuple[int, int]] | None = None,
     ) -> None:
-        self._width = size[0]
-        self._height = size[1]
-        self._entry = entry
-        self._exit = exit
-        self._output_file = output_file
-        self._perfect = perfect
+        self._width: int = size[0]
+        self._height: int = size[1]
+        self._entry_cell: tuple[int, int] = entry_cell
+        self._exit_cell: tuple[int, int] = exit_cell
+        self._perfect: bool = perfect
+        self._seed: int | None = seed
+        self._pattern = pattern
 
         self._grid: list[list[Cell]] = []
         self._maze: list[list[int]] = []
@@ -62,13 +68,13 @@ class MazeGenerator:
 
     def generate(self, seed: int | None = None) -> None:
 
-        self.seed = seed
+        self._seed = seed
 
         self._validate_values()
 
         self._grid_init()
         self._set_up_cells()
-        self._42_print()
+        self._put_pattern()
         self._iterative_backtracking()
         self._set_maze_values()
         self._BFS_path()
@@ -79,29 +85,30 @@ class MazeGenerator:
 
     @property
     def maze_entry(self) -> tuple[int, int]:
-        return self._entry[0], self._entry[1]
+        return self._entry_cell[0], self._entry_cell[1]
 
     @property
     def maze_exit(self) -> tuple[int, int]:
-        return self._exit[0], self._exit[1]
+        return self._exit_cell[0], self._exit_cell[1]
 
     @property
     def shortest_path(self) -> str:
         return self._shortest_path
 
-    def export(self) -> None:
+    def export(self, output_file: Path) -> None:
         """Write the generated maze to the output file"""
 
-        with open(self._output_file, "w") as file:
+        with open(output_file, "w") as file:
             for row in self._grid:
                 file.writelines(f"{cell.walls:X}" for cell in row)
 
                 file.write("\n")
 
             file.write("\n")
-            file.write(f"{self._entry[0]},{self._entry[1]}\n")
-            file.write(f"{self._exit[0]},{self._exit[1]}\n")
+            file.write(f"{self._entry_cell[0]},{self._entry_cell[1]}\n")
+            file.write(f"{self._exit_cell[0]},{self._exit_cell[1]}\n")
             file.write(f"{self._shortest_path}\n")
+            print(self._shortest_path)
 
     #   Private functions
 
@@ -132,37 +139,31 @@ class MazeGenerator:
                 if col > 0:
                     self._grid[row][col].w = self._grid[row][col - 1]
 
-    def _42_print(self) -> None:
-        """Create the 42 pattern in the center of the maze"""
+    def _put_pattern(self) -> None:
+        """Create the pattern in the center of the maze"""
 
-        ft = [
-            [15, 0, 0, 0, 15, 15, 15],
-            [15, 0, 0, 0, 0, 0, 15],
-            [15, 15, 15, 0, 15, 15, 15],
-            [0, 0, 15, 0, 15, 0, 0],
-            [0, 0, 15, 0, 15, 15, 15],
-        ]
-
-        ft_len_x = len(ft[0])
-        ft_len_y = len(ft)
-        m_len_x = len(self._grid[0])
-        m_len_y = len(self._grid)
-        start = (
-            (m_len_x // 2) - (ft_len_x // 2),
-            (m_len_y // 2) - (ft_len_y // 2),
-        )
-
-        if self._width < ft_len_x + 2 or self._height < ft_len_y + 2:
+        if not self._pattern:
             return
 
-        for i, row in enumerate(ft):
-            for j, val in enumerate(row):
-                if val == 15:
-                    x = start[0] + j
-                    y = start[1] + i
-                    if self._entry == (x, y) or self._exit == (x, y):
-                        raise ValueError(INVALID_ENTRY_EXIT_P)
-                    self._grid[y][x].visited = True
+        try:
+            pattern_width = max([x for (_, x) in self._pattern]) + 1
+            pattern_height = max([y for (y, _) in self._pattern]) + 1
+        except TypeError as e:
+            raise MazeGeneratorError(f"Issue putting the pattern: {e}") from e
+
+        if (
+            pattern_width < 2
+            or self._width < pattern_width + 2
+            or pattern_height < 2
+            or self._height < pattern_height + 2
+        ):
+            return
+
+        offset_x = (self._width - pattern_width) // 2
+        offset_y = (self._height - pattern_height) // 2
+
+        for x, y in self._pattern:
+            self._grid[offset_y + y][offset_x + x].visited = True
 
     def _iterative_backtracking(self) -> None:
         """Generates maze paths using iterative backtracking.
@@ -178,7 +179,7 @@ class MazeGenerator:
 
         current.visited = True
         stack.append(current)
-        random_generator = random.Random(self.seed)
+        random_generator = random.Random(self._seed)
         while stack:
             neighbors = self._get_valid_neighbors(stack[-1])
 
@@ -238,24 +239,30 @@ class MazeGenerator:
 
         # Validating negative values for entry and exit
 
-        if self._entry[0] < 0 or self._entry[1] < 0:
+        if self._entry_cell[0] < 0 or self._entry_cell[1] < 0:
             raise ValueError(INVALID_ENTRY_EXIT)
-        if self._exit[0] < 0 or self._exit[1] < 0:
+        if self._exit_cell[0] < 0 or self._exit_cell[1] < 0:
             raise ValueError(INVALID_ENTRY_EXIT)
 
         # Validating entry and exit must be inside the maze boundaries
 
-        if self._entry[0] >= self._width or self._entry[1] >= self._height:
+        if (
+            self._entry_cell[0] >= self._width
+            or self._entry_cell[1] >= self._height
+        ):
             raise ValueError(INVALID_ENTRY_EXIT)
-        if self._exit[0] >= self._width or self._exit[1] >= self._height:
+        if (
+            self._exit_cell[0] >= self._width
+            or self._exit_cell[1] >= self._height
+        ):
             raise ValueError(INVALID_ENTRY_EXIT)
-        if self._entry == self._exit:
+        if self._entry_cell == self._exit_cell:
             raise ValueError(INVALID_ENTRY_EXIT)
 
     def _BFS_path(self) -> None:
         path: list[str] = []
-        start = self._start
-        end = self._exit
+        start = self._entry_cell
+        end = self._exit_cell
 
         queue = deque([start])
 
@@ -283,17 +290,24 @@ class MazeGenerator:
                     continue
                 if next_y < 0 or next_y >= self._height:
                     continue
-                if self._grid[next_x][next_y].walls & wall:
+                if self._grid[explore[1]][explore[0]].walls & wall:
                     continue
-                if explore in before:
+                if (next_x, next_y) in before:
                     continue
 
-                before[next_x, next_y] = ((x, y), move)
+                before[next_x, next_y] = ((explore), move)
                 queue.append((next_x, next_y))
 
         if end not in before:
             self._shortest_path = ""
             return
 
-        
-         
+        current = end
+
+        while before[current] is not None:
+            parent, move = before[current]
+            path.append(move)
+            current = parent
+
+        path.reverse()
+        self._shortest_path = "".join(path)
