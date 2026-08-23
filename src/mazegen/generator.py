@@ -58,7 +58,8 @@ class MazeGenerator:
         self._exit_cell: tuple[int, int] = exit_cell
         self._perfect: bool = perfect
         self._seed: int | None = seed
-        self._pattern = pattern
+        self._pattern_list: list[tuple[int, int]] | None = pattern
+        self._pattern: list[tuple[int, int]] = []
 
         self._grid: list[list[Cell]] = []
         self._maze: list[list[int]] = []
@@ -94,6 +95,10 @@ class MazeGenerator:
     @property
     def shortest_path(self) -> str:
         return self._shortest_path
+
+    @property
+    def pattern(self) -> list[tuple[int, int]] | None:
+        return self._pattern
 
     def export(self, output_file: Path) -> None:
         """Write the generated maze to the output file"""
@@ -141,13 +146,13 @@ class MazeGenerator:
     def _put_pattern(self) -> None:
         """Create the pattern in the center of the maze"""
 
-        if not self._pattern:
+        if not self._pattern_list:
             return
 
         try:
-            pattern_width = max([x for (_, x) in self._pattern]) + 1
-            pattern_height = max([y for (y, _) in self._pattern]) + 1
-        except TypeError as e:
+            pattern_width = max([x for (x, _) in self._pattern_list]) + 1
+            pattern_height = max([y for (_, y) in self._pattern_list]) + 1
+        except ValueError as e:
             raise MazeGeneratorError(f"Issue putting the pattern: {e}") from e
 
         if (
@@ -161,8 +166,11 @@ class MazeGenerator:
         offset_x = (self._width - pattern_width) // 2
         offset_y = (self._height - pattern_height) // 2
 
-        for x, y in self._pattern:
-            self._grid[offset_y + y][offset_x + x].visited = True
+        self._pattern.clear()
+        for x, y in self._pattern_list:
+            col, row = offset_x + x, offset_y + y
+            self._pattern.append((col, row))
+            self._grid[row][col].visited = True
 
     def _iterative_backtracking(self) -> None:
         """Generates maze paths using iterative backtracking.
