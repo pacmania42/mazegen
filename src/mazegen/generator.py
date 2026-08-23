@@ -49,7 +49,7 @@ class MazeGenerator:
         entry_cell: tuple[int, int] = (0, 0),
         exit_cell: tuple[int, int] = (14, 14),
         perfect: bool = False,
-        seed: int = 42,
+        seed: int | None = None,
         pattern: list[tuple[int, int]] | None = None,
     ) -> None:
         self._width: int = size[0]
@@ -68,7 +68,7 @@ class MazeGenerator:
 
     def generate(self, seed: int | None = None) -> None:
 
-        self._seed = seed
+        self._seed = self._seed if seed is None else seed
 
         self._validate_values()
 

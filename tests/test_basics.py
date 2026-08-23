@@ -19,7 +19,7 @@ def test_constructor_signature() -> None:
 def test_seeds() -> None:
     g1 = MazeGenerator()
     g2 = MazeGenerator()
-    assert g1.maze == g2.maze
+    assert g1.maze != g2.maze
 
     old_maze = g1.maze
 
