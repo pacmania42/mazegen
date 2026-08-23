@@ -1,4 +1,5 @@
 import random
+from collections import deque
 from pathlib import Path
 
 """Maze generation module
@@ -258,4 +259,60 @@ class MazeGenerator:
             raise ValueError(INVALID_ENTRY_EXIT)
 
     def _BFS_path(self) -> None:
-        self._shortest_path = "SES"
+        path: list[str] = []
+        start = self._entry_cell
+        end = self._exit_cell
+
+        queue = deque([start])
+
+        before: dict[tuple[int, int], tuple[tuple[int, int], str] | None] = {
+            start: None
+        }
+
+        movements = [
+            (0, -1, 0b0001, "N"),
+            (1, 0, 0b0010, "E"),
+            (0, 1, 0b0100, "S"),
+            (-1, 0, 0b1000, "W"),
+        ]
+
+        while queue:
+            explore = queue.popleft()
+
+            if explore == end:
+                break
+
+            for x, y, wall, move in movements:
+                next_x = explore[0] + x
+                next_y = explore[1] + y
+
+                if next_x < 0 or next_x >= self._width:
+                    continue
+                if next_y < 0 or next_y >= self._height:
+                    continue
+                if self._grid[explore[1]][explore[0]].walls & wall:
+                    continue
+                if (next_x, next_y) in before:
+                    continue
+
+                before[next_x, next_y] = ((explore), move)
+                queue.append((next_x, next_y))
+
+        if end not in before:
+            self._shortest_path = ""
+            return
+
+        current = end
+
+        while True:
+            previous = before[current]
+
+            if previous is None:
+                break
+
+            parent, move = previous
+            path.append(move)
+            current = parent
+
+        path.reverse()
+        self._shortest_path = "".join(path)
