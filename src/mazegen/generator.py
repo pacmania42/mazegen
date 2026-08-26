@@ -1,6 +1,7 @@
 import random
 from collections import deque
 from pathlib import Path
+from typing import Literal
 
 """Maze generation module
 
@@ -38,6 +39,7 @@ class Cell:
         self.w: Cell | None = None
         self.walls = 0b1111
         self.visited = False
+        self.blocked = False
 
 
 class MazeGenerator:
@@ -50,6 +52,7 @@ class MazeGenerator:
         exit_cell: tuple[int, int] = (14, 14),
         perfect: bool = False,
         seed: int | None = None,
+        algorithm: Literal["wilson", "IB"] | None = "wilson",
         pattern: list[tuple[int, int]] | None = None,
     ) -> None:
         self._width: int = size[0]
@@ -58,6 +61,7 @@ class MazeGenerator:
         self._exit_cell: tuple[int, int] = exit_cell
         self._perfect: bool = perfect
         self._seed: int | None = seed
+        self._algorithm = algorithm
         self._pattern_list: list[tuple[int, int]] | None = pattern
         self._pattern: list[tuple[int, int]] = []
 
@@ -68,7 +72,6 @@ class MazeGenerator:
         self.generate(seed)
 
     def generate(self, seed: int | None = None) -> None:
-
         self._seed = self._seed if seed is None else seed
 
         self._validate_values()
@@ -76,7 +79,11 @@ class MazeGenerator:
         self._grid_init()
         self._set_up_cells()
         self._put_pattern()
-        self._iterative_backtracking()
+
+        if self._algorithm == "IB":
+            self._iterative_backtracking()
+        elif self._algorithm == "wilson":
+            self._wilson_generator()
 
         if not self._perfect:
             self._imperfect_maze()
@@ -174,7 +181,7 @@ class MazeGenerator:
         for x, y in self._pattern_list:
             col, row = offset_x + x, offset_y + y
             self._pattern.append((col, row))
-            self._grid[row][col].visited = True
+            self._grid[row][col].blocked = True
 
     def _iterative_backtracking(self) -> None:
         """Generates maze paths using iterative backtracking.
@@ -202,6 +209,55 @@ class MazeGenerator:
             else:
                 stack.pop()
 
+    def _wilson_generator(self) -> None:
+        def get_neighbors(current: Cell) -> list[Cell]:
+            return [
+                neighbor
+                for neighbor in (current.n, current.e, current.s, current.w)
+                if neighbor and not neighbor.blocked
+            ]
+
+        def random_walk(current: Cell, generator: random.Random) -> list[Cell]:
+            walk = [current]
+
+            # stop when this joins the maze
+            while not current.visited:
+                neighbors = get_neighbors(current)
+                if not neighbors:
+                    return []
+                nxt = generator.choice(neighbors)
+
+                # erase loop
+                if nxt in walk:
+                    walk = walk[: walk.index(nxt) + 1]
+                else:
+                    walk.append(nxt)
+
+                current = nxt
+
+            return walk
+
+        # Add the entry as part of the maze initially
+        x, y = self._entry_cell
+        entry = self._grid[y][x]
+        entry.visited = True
+
+        generator = random.Random(self._seed)
+        # Run loop-erased random walk starting from any unvisited cell
+        for row in range(len(self._grid)):
+            for col in range(len(self._grid[row])):
+                current = self._grid[row][col]
+                if current.visited or current.blocked:
+                    continue
+                current = self._grid[row][col]
+
+                walk = random_walk(current, generator)
+                for cell in walk[:-1]:
+                    cell.visited = True
+                # carve walls
+                for i in range(len(walk) - 1):
+                    self._remove_wall(walk[i], walk[i + 1])
+
     def _remove_wall(self, current_cell: Cell, next_cell: Cell) -> None:
         """Removes the shared wall between two cells"""
 
@@ -224,13 +280,12 @@ class MazeGenerator:
         neighbors: list[Cell] = []
 
         for wall in [cell.n, cell.e, cell.s, cell.w]:
-            if wall and not wall.visited:
+            if wall and not (wall.visited or wall.blocked):
                 neighbors.append(wall)
 
         return neighbors
 
     def _set_maze_values(self) -> None:
-
         maze: list[list[int]] = []
 
         for row in self._grid:
@@ -242,7 +297,6 @@ class MazeGenerator:
         self._maze = maze
 
     def _validate_values(self) -> None:
-
         # Validating size maze
 
         if self._width < 2 or self._height < 2:
