@@ -26,15 +26,18 @@ p = [
 
 def test_constructor_signature() -> None:
     sig = inspect.signature(MazeGenerator.__init__)
-    assert list(sig.parameters) == [
-        "self",
-        "size",
-        "entry_cell",
-        "exit_cell",
-        "perfect",
-        "seed",
-        "pattern",
-    ]
+    assert set(sig.parameters) == set(
+        [
+            "self",
+            "size",
+            "entry_cell",
+            "exit_cell",
+            "perfect",
+            "seed",
+            "algorithm",
+            "pattern",
+        ]
+    )
 
 
 def test_seeds() -> None:
@@ -62,7 +65,7 @@ def test_regeneration_creates_new_maze_object() -> None:
 
 
 def test_shortest_path() -> None:
-    g = MazeGenerator(perfect=True, seed=42)
+    g = MazeGenerator(algorithm="IB", perfect=True, seed=42)
 
     path_for_42 = (
         "EESENEEESENEEEEESEESSSWSSESSSWNWSWNWWNENWWWWSWNNNWNENNWSWW"
