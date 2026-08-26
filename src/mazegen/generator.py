@@ -78,7 +78,7 @@ class MazeGenerator:
         self._put_pattern()
         self._iterative_backtracking()
 
-        if self._perfect is False:
+        if not self._perfect:
             self._imperfect_maze()
 
         self._set_maze_values()
@@ -277,11 +277,10 @@ class MazeGenerator:
 
                 if cell.walls in [0b0111, 0b1011, 0b1101, 0b1110]:
                     for neighbor in [cell.n, cell.e, cell.s, cell.w]:
-                        # Check if neighbor is in pattern
-                        if neighbor:
-                            if neighbor.walls == 15:
-                                continue
-                            self._remove_wall(cell, neighbor)
+                        # skip if neighbor is in pattern
+                        if not neighbor or neighbor.walls == 15:
+                            continue
+                        self._remove_wall(cell, neighbor)
 
     def _BFS_path(self) -> None:
         path: list[str] = []
