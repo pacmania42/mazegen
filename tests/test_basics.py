@@ -2,6 +2,27 @@ import inspect
 
 from mazegen import MazeGenerator
 
+p = [
+    (0, 0),
+    (0, 1),
+    (0, 2),
+    (1, 2),
+    (2, 2),
+    (2, 3),
+    (2, 4),
+    (4, 0),
+    (5, 0),
+    (6, 0),
+    (6, 1),
+    (6, 2),
+    (5, 2),
+    (4, 2),
+    (4, 3),
+    (4, 4),
+    (5, 4),
+    (6, 4),
+]
+
 
 def test_constructor_signature() -> None:
     sig = inspect.signature(MazeGenerator.__init__)
@@ -17,20 +38,20 @@ def test_constructor_signature() -> None:
 
 
 def test_seeds() -> None:
-    g1 = MazeGenerator()
-    g2 = MazeGenerator()
+    g1 = MazeGenerator(pattern=p)
+    g2 = MazeGenerator(pattern=p)
     assert g1.maze != g2.maze
 
     old_maze = g1.maze
 
-    g1 = MazeGenerator(seed=3)
-    g2 = MazeGenerator(seed=3)
+    g1 = MazeGenerator(pattern=p, seed=3)
+    g2 = MazeGenerator(pattern=p, seed=3)
     assert g1.maze == g2.maze
     assert g1.maze != old_maze
 
 
 def test_regeneration_creates_new_maze_object() -> None:
-    g = MazeGenerator(seed=42)
+    g = MazeGenerator(pattern=p, seed=42)
 
     first_maze = g.maze
 
@@ -41,7 +62,7 @@ def test_regeneration_creates_new_maze_object() -> None:
 
 
 def test_shortest_path() -> None:
-    g = MazeGenerator(seed=42)
+    g = MazeGenerator(perfect=True, seed=42)
 
     path_for_42 = (
         "EESENEEESENEEEEESEESSSWSSESSSWNWSWNWWNENWWWWSWNNNWNENNWSWW"

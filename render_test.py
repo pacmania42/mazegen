@@ -13,7 +13,11 @@ def load_maze(filename: str) -> list[list[int]]:
 
     with open(filename, "r") as file:
         for line in file:
-            row = [int(value, 16) for value in line.strip()]
+            line = line.strip()
+            if not line:
+                break
+
+            row = [int(value, 16) for value in line]
             maze.append(row)
 
     return maze
