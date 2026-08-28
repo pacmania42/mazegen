@@ -1,3 +1,5 @@
+This project has been created as part of the 42 curriculum by semebrah, lupetill.
+
 # mazegen
 
 A Python maze generator with two generation algorithms, configurable entry/exit points, obstacle patterns, and a built-in shortest-path solver.
@@ -21,7 +23,7 @@ A Python maze generator with two generation algorithms, configurable entry/exit 
 
 ```python
 from pathlib import Path
-from maze import MazeGenerator
+from mazegen import MazeGenerator
 
 maze = MazeGenerator(
     size=(15, 15),
@@ -45,8 +47,8 @@ print(maze.shortest_path)   # e.g. "EESSWW..."
 | `entry_cell` | `tuple[int, int]`           | Starting cell coordinates                                   |
 | `exit_cell`  | `tuple[int, int]`           | Goal cell coordinates                                        |
 | `perfect`    | `bool`                      | Reserved for perfect-maze mode                              |
-| `seed`       | `int \| None`                | Seed for reproducible generation                             |
-| `algorithm`  | `"IB"` \| `"wilson"`         | Which generation algorithm to use                            |
+| `seed`       | `int \| None`               | Seed for reproducible generation                             |
+| `algorithm`  | `"IB"` \| `"wilson"`        | Which generation algorithm to use                            |
 | `pattern`    | `list[tuple[int, int]]`     | Optional shape (relative coordinates) to carve into the center |
 
 ## How a cell is stored

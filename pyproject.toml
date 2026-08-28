@@ -1,5 +1,5 @@
 [project]
-name = "mazegen42"
+name = "mazegen"
 version = "0.0.3"
 description = "Maze generator and solver."
 readme = "README.md"
