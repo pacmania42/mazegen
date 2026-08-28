@@ -1,3 +1,5 @@
+*This project has been created as part of the 42 curriculum by lupetill, semebrah.*
+
 # mazegen
 
 A Python maze generator with two generation algorithms, configurable entry/exit points, obstacle patterns, and a built-in shortest-path solver.
@@ -9,7 +11,7 @@ A Python maze generator with two generation algorithms, configurable entry/exit 
   - `wilson` — Wilson's algorithm (loop-erased random walk, produces a uniform spanning tree with no generation bias)
 - **Reproducible output** — pass a `seed` to get the same maze every time
 - **Custom size, entry, and exit** — any rectangular grid, entry/exit placed anywhere inside it
-- **Obstacle patterns** — carve a fixed shape into the center of the maze that generation routes around
+- **Obstacle patterns** — block a fixed shape in the center of the maze that generation routes around
 - **Shortest-path solver** — BFS from entry to exit, returned as a string of moves (`N`/`E`/`S`/`W`)
 - **File export** — writes the maze, entry/exit coordinates, and solution path to a plain text file
 
@@ -17,37 +19,71 @@ A Python maze generator with two generation algorithms, configurable entry/exit 
 
 - Python 3.10+
 
-## Usage
+## Basic usage
 
 ```python
-from pathlib import Path
-from maze import MazeGenerator
+from mazegen import MazeGenerator
+
+maze = MazeGenerator()
+
+print(maze.maze)
+print(maze.shortest_path)
+```
+
+## Custom parameters
+
+You can customize the maze size, entry and exit cells, generation algorithm, and seed:
+
+```python
+from mazegen import MazeGenerator
 
 maze = MazeGenerator(
-    size=(15, 15),
+    size=(20, 10),
     entry_cell=(0, 0),
-    exit_cell=(14, 14),
-    algorithm="wilson",   # or "IB"
+    exit_cell=(19, 9),
+    perfect=True,
     seed=42,
+    algorithm="IB",
 )
 
-maze.export(Path("maze.txt"))
-
-print(maze.maze)            # 2D grid of wall bitmasks
-print(maze.shortest_path)   # e.g. "EESSWW..."
+print(maze.maze)
+print(maze.maze_entry)
+print(maze.maze_exit)
+print(maze.shortest_path)
 ```
+
+Using the same `seed` and parameters produces the same maze.
 
 ### Constructor options
 
-| Parameter    | Type                        | Description                                              |
-|--------------|-----------------------------|------------------------------------------------------------|
-| `size`       | `tuple[int, int]`           | `(width, height)` of the grid                              |
-| `entry_cell` | `tuple[int, int]`           | Starting cell coordinates                                   |
-| `exit_cell`  | `tuple[int, int]`           | Goal cell coordinates                                        |
-| `perfect`    | `bool`                      | Reserved for perfect-maze mode                              |
-| `seed`       | `int \| None`                | Seed for reproducible generation                             |
-| `algorithm`  | `"IB"` \| `"wilson"`         | Which generation algorithm to use                            |
-| `pattern`    | `list[tuple[int, int]]`     | Optional shape (relative coordinates) to carve into the center |
+| Parameter | Type | Description |
+|---|---|---|
+| `size` | `tuple[int, int]` | `(width, height)` of the grid |
+| `entry_cell` | `tuple[int, int]` | Starting cell coordinates |
+| `exit_cell` | `tuple[int, int]` | Goal cell coordinates |
+| `perfect` | `bool` | If `True`, generates a perfect maze; otherwise generates an imperfect maze |
+| `seed` | `int \| None` | Seed for reproducible generation |
+| `algorithm` | `"IB" \| "wilson"` | Generation algorithm to use |
+| `pattern` | `list[tuple[int, int]] \| None` | Optional blocked pattern defined with relative coordinates |
+
+## Accessing the generated maze
+
+After generation, the maze and its solution can be accessed directly:
+
+```python
+print(maze.maze)           # 2D grid of wall bitmasks
+print(maze.maze_entry)     # Entry coordinates
+print(maze.maze_exit)      # Exit coordinates
+print(maze.shortest_path)  # Solution using N/E/S/W moves
+```
+
+## Exporting the maze
+
+```python
+from pathlib import Path
+
+maze.export(Path("maze.txt"))
+```
 
 ## How a cell is stored
 
