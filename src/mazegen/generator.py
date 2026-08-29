@@ -80,6 +80,7 @@ class MazeGenerator:
 
         if not self._perfect:
             self._imperfect_maze()
+            self._remove_dead_ends()
 
         self._set_maze_values()
         self._BFS_path()
@@ -281,6 +282,24 @@ class MazeGenerator:
                         if not neighbor or neighbor.walls == 15:
                             continue
                         self._remove_wall(cell, neighbor)
+
+    def _remove_dead_ends(self) -> None:
+        for y in range(self._height):
+            for x in range(self._width):
+                cell = self._grid[y][x]
+
+                if y == 0 or y == self._height - 1:
+                    if cell.walls.bit_count() > 2:
+                        if cell.e:
+                            self._remove_wall(cell, cell.e)
+                        if cell.w:
+                            self._remove_wall(cell, cell.w)
+                if x == 0 or x == self._width - 1:
+                    if cell.walls.bit_count() > 2:
+                        if cell.n:
+                            self._remove_wall(cell, cell.n)
+                        if cell.s:
+                            self._remove_wall(cell, cell.s)
 
     def _BFS_path(self) -> None:
         path: list[str] = []
