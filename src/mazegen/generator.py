@@ -32,7 +32,8 @@ class Cell:
     if it has been visited during maze generator.
     """
 
-    def __init__(self) -> None:
+    def __init__(self, col: int, row: int) -> None:
+        self.pos: tuple[int, int] = col, row
         self.n: Cell | None = None
         self.e: Cell | None = None
         self.s: Cell | None = None
@@ -68,10 +69,12 @@ class MazeGenerator:
         self._grid: list[list[Cell]] = []
         self._maze: list[list[int]] = []
         self._shortest_path: str = ""
+        self._carving_order: list[tuple[int, int, str]] = []
 
         self.generate(seed)
 
     def generate(self, seed: int | None = None) -> None:
+        self._carving_order.clear()
         self._seed = self._seed if seed is None else seed
 
         self._validate_values()
@@ -90,6 +93,12 @@ class MazeGenerator:
 
         self._set_maze_values()
         self._BFS_path()
+
+    @property
+    def carving_order(
+        self,
+    ) -> list[tuple[int, int, str]]:
+        return self._carving_order
 
     @property
     def maze(self) -> list[list[int]]:
@@ -132,11 +141,11 @@ class MazeGenerator:
 
         self._grid.clear()
 
-        for _ in range(self._height):
+        for r in range(self._height):
             row: list[Cell] = []
 
-            for _ in range(self._width):
-                row.append(Cell())
+            for c in range(self._width):
+                row.append(Cell(col=c, row=r))
 
             self._grid.append(row)
 
@@ -264,15 +273,22 @@ class MazeGenerator:
         if current_cell.n == next_cell:
             current_cell.walls &= 0b1110
             next_cell.walls &= 0b1011
-        if current_cell.e == next_cell:
+            dir = "N"
+        elif current_cell.e == next_cell:
             current_cell.walls &= 0b1101
             next_cell.walls &= 0b0111
-        if current_cell.s == next_cell:
+            dir = "E"
+        elif current_cell.s == next_cell:
             current_cell.walls &= 0b1011
             next_cell.walls &= 0b1110
-        if current_cell.w == next_cell:
+            dir = "S"
+        else:
             current_cell.walls &= 0b0111
             next_cell.walls &= 0b1101
+            dir = "W"
+        self._carving_order.append(
+            (current_cell.pos[0], current_cell.pos[1], dir)
+        )
 
     def _get_valid_neighbors(self, cell: Cell) -> list[Cell]:
         """Return the unvisited neighbors of a cell"""
