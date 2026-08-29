@@ -189,7 +189,12 @@ class MazeGenerator:
         self._pattern.clear()
         for x, y in self._pattern_list:
             col, row = offset_x + x, offset_y + y
+            if (col, row) in [self._entry_cell, self._exit_cell]:
+                self._pattern.clear()
+                return
             self._pattern.append((col, row))
+
+        for col, row in self._pattern:
             self._grid[row][col].blocked = True
 
     def _iterative_backtracking(self) -> None:

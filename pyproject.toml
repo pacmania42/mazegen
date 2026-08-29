@@ -19,6 +19,5 @@ line-length = 79
 [tool.ruff.lint]
 select = ["E", "F", "B", "I"]
 
-
 [tool.pytest.ini_options]
 pythonpath = ["src"]
