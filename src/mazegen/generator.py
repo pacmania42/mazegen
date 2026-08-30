@@ -124,7 +124,6 @@ class MazeGenerator:
     def export(self, output_file: Path) -> None:
         """Write the generated maze to the output file"""
 
-
         try:
             if not output_file.parent.exists():
                 output_file.parent.mkdir(parents=True)
@@ -141,8 +140,8 @@ class MazeGenerator:
                 file.write(f"{self._shortest_path}\n")
         except OSError as e:
             raise MazeGeneratorError(
-                    "MazeGeneratorError: couldn't write to the output file"
-                    ) from e
+                "MazeGeneratorError: couldn't write to the output file"
+            ) from e
 
     #   Private functions
 
