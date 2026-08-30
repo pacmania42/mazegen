@@ -124,16 +124,24 @@ class MazeGenerator:
     def export(self, output_file: Path) -> None:
         """Write the generated maze to the output file"""
 
-        with open(output_file, "w") as file:
-            for row in self._grid:
-                file.writelines(f"{cell.walls:X}" for cell in row)
+        try:
+            if not output_file.parent.exists():
+                output_file.parent.mkdir(parents=True)
+
+            with open(output_file, "w") as file:
+                for row in self._grid:
+                    file.writelines(f"{cell.walls:X}" for cell in row)
+
+                    file.write("\n")
 
                 file.write("\n")
-
-            file.write("\n")
-            file.write(f"{self._entry_cell[0]},{self._entry_cell[1]}\n")
-            file.write(f"{self._exit_cell[0]},{self._exit_cell[1]}\n")
-            file.write(f"{self._shortest_path}\n")
+                file.write(f"{self._entry_cell[0]},{self._entry_cell[1]}\n")
+                file.write(f"{self._exit_cell[0]},{self._exit_cell[1]}\n")
+                file.write(f"{self._shortest_path}\n")
+        except OSError as e:
+            raise MazeGeneratorError(
+                "MazeGeneratorError: couldn't write to the output file"
+            ) from e
 
     #   Private functions
 
@@ -322,14 +330,14 @@ class MazeGenerator:
         # Validating size maze
 
         if self._width < 2 or self._height < 2:
-            raise ValueError(INVALID_SIZE)
+            raise MazeGeneratorError(INVALID_SIZE)
 
         # Validating negative values for entry and exit
 
         if self._entry_cell[0] < 0 or self._entry_cell[1] < 0:
-            raise ValueError(INVALID_ENTRY_EXIT)
+            raise MazeGeneratorError(INVALID_ENTRY_EXIT)
         if self._exit_cell[0] < 0 or self._exit_cell[1] < 0:
-            raise ValueError(INVALID_ENTRY_EXIT)
+            raise MazeGeneratorError(INVALID_ENTRY_EXIT)
 
         # Validating entry and exit must be inside the maze boundaries
 
@@ -337,14 +345,14 @@ class MazeGenerator:
             self._entry_cell[0] >= self._width
             or self._entry_cell[1] >= self._height
         ):
-            raise ValueError(INVALID_ENTRY_EXIT)
+            raise MazeGeneratorError(INVALID_ENTRY_EXIT)
         if (
             self._exit_cell[0] >= self._width
             or self._exit_cell[1] >= self._height
         ):
-            raise ValueError(INVALID_ENTRY_EXIT)
+            raise MazeGeneratorError(INVALID_ENTRY_EXIT)
         if self._entry_cell == self._exit_cell:
-            raise ValueError(INVALID_ENTRY_EXIT)
+            raise MazeGeneratorError(INVALID_ENTRY_EXIT)
 
     def _imperfect_maze(self) -> None:
         for y in range(1, self._height - 1):
