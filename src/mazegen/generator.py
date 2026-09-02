@@ -68,7 +68,7 @@ class MazeGenerator:
         self._pattern_list: Iterable[tuple[int, int]] | None = pattern
         self.pattern: list[tuple[int, int]] = []
 
-        self._grid: list[list[Cell]] = []
+        self.grid: list[list[Cell]] = []
         self.maze: list[list[int]] = []
         self.shortest_path: str = ""
         self.carving_order: list[tuple[int, int, str]] = []
@@ -105,7 +105,7 @@ class MazeGenerator:
                 output_file.parent.mkdir(parents=True)
 
             with open(output_file, "w") as file:
-                for row in self._grid:
+                for row in self.grid:
                     file.writelines(f"{cell.walls:X}" for cell in row)
 
                     file.write("\n")
@@ -124,7 +124,7 @@ class MazeGenerator:
     def _grid_init(self) -> None:
         """Creates and initialize the maze grid."""
 
-        self._grid.clear()
+        self.grid.clear()
 
         for r in range(self._height):
             row: list[Cell] = []
@@ -132,7 +132,7 @@ class MazeGenerator:
             for c in range(self._width):
                 row.append(Cell(col=c, row=r))
 
-            self._grid.append(row)
+            self.grid.append(row)
 
     def _set_up_cells(self) -> None:
         """Links each cell to its existing neighboring cells."""
@@ -140,13 +140,13 @@ class MazeGenerator:
         for row in range(self._height):
             for col in range(self._width):
                 if row > 0:
-                    self._grid[row][col].n = self._grid[row - 1][col]
+                    self.grid[row][col].n = self.grid[row - 1][col]
                 if col < self._width - 1:
-                    self._grid[row][col].e = self._grid[row][col + 1]
+                    self.grid[row][col].e = self.grid[row][col + 1]
                 if row < self._height - 1:
-                    self._grid[row][col].s = self._grid[row + 1][col]
+                    self.grid[row][col].s = self.grid[row + 1][col]
                 if col > 0:
-                    self._grid[row][col].w = self._grid[row][col - 1]
+                    self.grid[row][col].w = self.grid[row][col - 1]
 
     def _put_pattern(self) -> None:
         """Create the pattern in the center of the maze"""
@@ -180,7 +180,7 @@ class MazeGenerator:
             self.pattern.append((col, row))
 
         for col, row in self.pattern:
-            self._grid[row][col].blocked = True
+            self.grid[row][col].blocked = True
 
     def _iterative_backtracking(self) -> None:
         """Generates maze paths using iterative backtracking.
@@ -191,7 +191,7 @@ class MazeGenerator:
 
         """
 
-        current = self._grid[0][0]
+        current = self.grid[0][0]
         stack: list[Cell] = []
 
         current.visited = True
@@ -218,44 +218,30 @@ class MazeGenerator:
 
         def random_walk(current: Cell, generator: random.Random) -> list[Cell]:
             walk = [current]
-
-            # stop when this joins the maze
             while not current.visited:
-                neighbors = get_neighbors(current)
-                if not neighbors:
-                    return []
-                nxt = generator.choice(neighbors)
-
-                # erase loop
+                nxt = generator.choice(get_neighbors(current))
                 if nxt in walk:
                     walk = walk[: walk.index(nxt) + 1]
                 else:
                     walk.append(nxt)
-
                 current = nxt
-
             return walk
 
-        # Add the entry as part of the maze initially
-        x, y = self._entry_cell
-        entry = self._grid[y][x]
-        entry.visited = True
-
         generator = random.Random(self._seed)
-        # Run loop-erased random walk starting from any unvisited cell
-        for row in range(len(self._grid)):
-            for col in range(len(self._grid[row])):
-                current = self._grid[row][col]
-                if current.visited or current.blocked:
-                    continue
-                current = self._grid[row][col]
-
-                walk = random_walk(current, generator)
-                for cell in walk[:-1]:
-                    cell.visited = True
-                # carve walls
-                for i in range(len(walk) - 1):
-                    self._remove_wall(walk[i], walk[i + 1])
+        unvisited = [cell for _ in self.grid for cell in _ if not cell.blocked]
+        new = True
+        while unvisited:
+            root = generator.choice(unvisited)
+            if new:
+                root.visited = True
+                unvisited.remove(root)
+                new = False
+            walk = random_walk(root, generator)
+            for cell in walk[:-1]:
+                cell.visited = True
+                unvisited.remove(cell)
+            for i in range(len(walk) - 1):
+                self._remove_wall(walk[i], walk[i + 1])
 
     def _remove_wall(self, current_cell: Cell, next_cell: Cell) -> None:
         """Removes the shared wall between two cells"""
@@ -294,7 +280,7 @@ class MazeGenerator:
     def _set_maze_values(self) -> None:
         maze: list[list[int]] = []
 
-        for row in self._grid:
+        for row in self.grid:
             new_row = []
             for cell in row:
                 new_row.append(cell.walls)
@@ -333,7 +319,7 @@ class MazeGenerator:
     def _imperfect_maze(self) -> None:
         for y in range(1, self._height - 1):
             for x in range(1, self._width - 1):
-                cell = self._grid[y][x]
+                cell = self.grid[y][x]
 
                 if cell.walls in [0b0111, 0b1011, 0b1101, 0b1110]:
                     for neighbor in [cell.n, cell.e, cell.s, cell.w]:
@@ -345,7 +331,7 @@ class MazeGenerator:
     def _remove_dead_ends(self) -> None:
         for y in range(self._height):
             for x in range(self._width):
-                cell = self._grid[y][x]
+                cell = self.grid[y][x]
 
                 if y == 0 or y == self._height - 1:
                     if cell.walls.bit_count() > 2:
@@ -392,7 +378,7 @@ class MazeGenerator:
                     continue
                 if next_y < 0 or next_y >= self._height:
                     continue
-                if self._grid[explore[1]][explore[0]].walls & wall:
+                if self.grid[explore[1]][explore[0]].walls & wall:
                     continue
                 if (next_x, next_y) in before:
                     continue
