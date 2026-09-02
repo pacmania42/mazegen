@@ -1,7 +1,7 @@
 import random
 from collections import deque
 from pathlib import Path
-from typing import Literal
+from typing import Iterable, Literal
 
 """Maze generation module
 
@@ -54,27 +54,29 @@ class MazeGenerator:
         perfect: bool = False,
         seed: int | None = None,
         algorithm: Literal["wilson", "IB"] | None = "wilson",
-        pattern: list[tuple[int, int]] | None = None,
+        pattern: Iterable[tuple[int, int]] | None = None,
     ) -> None:
         self._width: int = size[0]
         self._height: int = size[1]
+        self.maze_entry = entry_cell
+        self.maze_exit = exit_cell
         self._entry_cell: tuple[int, int] = entry_cell
         self._exit_cell: tuple[int, int] = exit_cell
         self._perfect: bool = perfect
         self._seed: int | None = seed
         self._algorithm = algorithm
-        self._pattern_list: list[tuple[int, int]] | None = pattern
-        self._pattern: list[tuple[int, int]] = []
+        self._pattern_list: Iterable[tuple[int, int]] | None = pattern
+        self.pattern: list[tuple[int, int]] = []
 
         self._grid: list[list[Cell]] = []
-        self._maze: list[list[int]] = []
-        self._shortest_path: str = ""
-        self._carving_order: list[tuple[int, int, str]] = []
+        self.maze: list[list[int]] = []
+        self.shortest_path: str = ""
+        self.carving_order: list[tuple[int, int, str]] = []
 
         self.generate(seed)
 
     def generate(self, seed: int | None = None) -> None:
-        self._carving_order.clear()
+        self.carving_order.clear()
         self._seed = self._seed if seed is None else seed
 
         self._validate_values()
@@ -95,32 +97,6 @@ class MazeGenerator:
         self._set_maze_values()
         self._BFS_path()
 
-    @property
-    def carving_order(
-        self,
-    ) -> list[tuple[int, int, str]]:
-        return self._carving_order
-
-    @property
-    def maze(self) -> list[list[int]]:
-        return self._maze
-
-    @property
-    def maze_entry(self) -> tuple[int, int]:
-        return self._entry_cell[0], self._entry_cell[1]
-
-    @property
-    def maze_exit(self) -> tuple[int, int]:
-        return self._exit_cell[0], self._exit_cell[1]
-
-    @property
-    def shortest_path(self) -> str:
-        return self._shortest_path
-
-    @property
-    def pattern(self) -> list[tuple[int, int]] | None:
-        return self._pattern
-
     def export(self, output_file: Path) -> None:
         """Write the generated maze to the output file"""
 
@@ -137,7 +113,7 @@ class MazeGenerator:
                 file.write("\n")
                 file.write(f"{self._entry_cell[0]},{self._entry_cell[1]}\n")
                 file.write(f"{self._exit_cell[0]},{self._exit_cell[1]}\n")
-                file.write(f"{self._shortest_path}\n")
+                file.write(f"{self.shortest_path}\n")
         except OSError as e:
             raise MazeGeneratorError(
                 "MazeGeneratorError: couldn't write to the output file"
@@ -195,15 +171,15 @@ class MazeGenerator:
         offset_x = (self._width - pattern_width) // 2
         offset_y = (self._height - pattern_height) // 2
 
-        self._pattern.clear()
+        self.pattern.clear()
         for x, y in self._pattern_list:
             col, row = offset_x + x, offset_y + y
             if (col, row) in [self._entry_cell, self._exit_cell]:
-                self._pattern.clear()
+                self.pattern.clear()
                 return
-            self._pattern.append((col, row))
+            self.pattern.append((col, row))
 
-        for col, row in self._pattern:
+        for col, row in self.pattern:
             self._grid[row][col].blocked = True
 
     def _iterative_backtracking(self) -> None:
@@ -300,7 +276,7 @@ class MazeGenerator:
             current_cell.walls &= 0b0111
             next_cell.walls &= 0b1101
             dir = "W"
-        self._carving_order.append(
+        self.carving_order.append(
             (current_cell.pos[0], current_cell.pos[1], dir)
         )
 
@@ -324,7 +300,7 @@ class MazeGenerator:
                 new_row.append(cell.walls)
             maze.append(new_row)
 
-        self._maze = maze
+        self.maze = maze
 
     def _validate_values(self) -> None:
         # Validating size maze
@@ -425,7 +401,7 @@ class MazeGenerator:
                 queue.append((next_x, next_y))
 
         if end not in before:
-            self._shortest_path = ""
+            self.shortest_path = ""
             return
 
         current = end
@@ -441,4 +417,4 @@ class MazeGenerator:
             current = parent
 
         path.reverse()
-        self._shortest_path = "".join(path)
+        self.shortest_path = "".join(path)
